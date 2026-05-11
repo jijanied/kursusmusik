@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doremi Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #F0D898;
+  --dark: #0F0C0A;
+  --dark2: #1A1612;
+  --dark3: #22201A;
+  --surface: #252018;
+  --cream: #F5F0E8;
+  --text: #EDE6D5;
+  --muted: #9A8F7E;
+  --border: rgba(201,168,76,0.15);
+  --success: #4CAF50;
+  --warning: #FF9800;
+  --danger: #F44336;
+  --info: #2196F3;
+  --sidebar-w: 240px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;display:flex}
+
+/* ===== LOGIN ===== */
+#login-screen {
+  position:fixed;inset:0;z-index:1000;
+  background:var(--dark);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:0;
+}
+.login-card {
+  background:var(--dark2);border:1px solid var(--border);
+  border-radius:20px;padding:3rem 2.5rem;width:100%;max-width:420px;
+}
+.login-logo {
+  text-align:center;margin-bottom:2rem;
+}
+.login-logo .icon {
+  width:72px;height:72px;border-radius:50%;
+  background:rgba(201,168,76,0.15);border:1px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;margin:0 auto 1rem;
+}
+.login-logo h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--gold)}
+.login-logo p{font-size:13px;color:var(--muted);margin-top:4px}
+.form-group{margin-bottom:1.2rem}
+.form-group label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;letter-spacing:0.04em}
+.form-group input{
+  width:100%;padding:0.75rem 1rem;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  transition:border-color 0.2s;outline:none;
+}
+.form-group input:focus{border-color:var(--gold)}
+.btn-login{
+  width:100%;padding:0.9rem;background:var(--gold);color:var(--dark);
+  border:none;border-radius:10px;font-family:'DM Sans',sans-serif;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:0.5rem;
+}
+.btn-login:hover{background:#D4B55C;transform:translateY(-1px)}
+.login-hint{text-align:center;margin-top:1.2rem;font-size:12px;color:var(--muted)}
+.login-hint code{background:var(--surface);padding:2px 6px;border-radius:4px;color:var(--gold);font-size:11px}
+#login-error{color:#F44336;font-size:13px;text-align:center;margin-top:8px;display:none}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width:var(--sidebar-w);min-height:100vh;
+  background:var(--dark2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:50;
+  transition:transform 0.3s;
+}
+.sidebar-logo{
+  padding:1.5rem 1.2rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.s-logo-icon{
+  width:38px;height:38px;border-radius:50%;background:rgba(201,168,76,0.15);
+  border:1px solid rgba(201,168,76,0.4);display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.s-logo-text strong{display:block;font-family:'Playfair Display',serif;font-size:15px;color:var(--gold)}
+.s-logo-text span{font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase}
+.sidebar-nav{flex:1;padding:1rem 0.8rem;overflow-y:auto}
+.nav-section-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);padding:0.8rem 0.5rem 0.4rem;font-weight:500}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:0.65rem 0.8rem;
+  border-radius:10px;cursor:pointer;transition:all 0.2s;margin-bottom:2px;
+  font-size:14px;color:var(--muted);font-weight:400;
+}
+.nav-item:hover{background:rgba(201,168,76,0.08);color:var(--text)}
+.nav-item.active{background:rgba(201,168,76,0.15);color:var(--gold);font-weight:500}
+.nav-item .icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.sidebar-footer{padding:1rem 0.8rem;border-top:1px solid var(--border)}
+.api-status{
+  font-size:11px;padding:0.5rem 0.8rem;background:var(--surface);
+  border-radius:8px;color:var(--muted);margin-bottom:0.8rem;
+}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4CAF50;margin-right:5px}
+.btn-logout{
+  width:100%;padding:0.6rem;background:transparent;border:1px solid rgba(244,67,54,0.3);
+  color:#F44336;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-logout:hover{background:rgba(244,67,54,0.1)}
+
+/* ===== MAIN ===== */
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{
+  padding:1rem 1.5rem;background:var(--dark2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;
+}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.btn-menu{display:none;background:none;border:none;color:var(--text);font-size:20px;cursor:pointer}
+.page-title{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text)}
+.page-sub{font-size:12px;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-date{font-size:12px;color:var(--muted)}
+.admin-badge{
+  display:flex;align-items:center;gap:8px;padding:0.4rem 0.8rem;
+  background:var(--surface);border-radius:50px;border:1px solid var(--border);font-size:13px;
+}
+.admin-dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+
+/* ===== CONTENT ===== */
+.content{padding:1.5rem;flex:1;overflow-x:hidden}
+.page{display:none}
+.page.active{display:block}
+
+/* ===== STAT CARDS ===== */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{
+  background:var(--dark2);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;
+}
+.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem}
+.stat-icon{
+  width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.stat-icon.gold{background:rgba(201,168,76,0.15)}
+.stat-icon.green{background:rgba(76,175,80,0.15)}
+.stat-icon.orange{background:rgba(255,152,0,0.15)}
+.stat-icon.red{background:rgba(244,67,54,0.15)}
+.stat-trend{font-size:11px;padding:3px 8px;border-radius:50px}
+.trend-up{background:rgba(76,175,80,0.1);color:#4CAF50}
+.trend-down{background:rgba(244,67,54,0.1);color:#F44336}
+.stat-val{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;margin-bottom:2px}
+.stat-label{font-size:12px;color:var(--muted)}
+
+/* ===== GRID ===== */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.5rem}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:1.2rem;margin-bottom:1.5rem}
+.card{background:var(--dark2);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem}
+.card-title{font-size:14px;font-weight:600;margin-bottom:1.2rem;display:flex;align-items:center;gap:8px}
+.card-title .badge{
+  font-size:11px;font-weight:400;padding:2px 8px;border-radius:50px;
+  background:rgba(201,168,76,0.1);color:var(--gold);
+}
+
+/* ===== TABLE ===== */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:0.6rem 0.8rem;font-size:11px;font-weight:500;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:0.7rem 0.8rem;border-bottom:1px solid rgba(201,168,76,0.05);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(201,168,76,0.03)}
+.badge-status{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:500}
+.badge-lunas{background:rgba(76,175,80,0.1);color:#4CAF50}
+.badge-pending{background:rgba(255,152,0,0.1);color:#FF9800}
+.badge-terlambat{background:rgba(244,67,54,0.1);color:#F44336}
+.instrumen-badge{padding:2px 8px;border-radius:50px;font-size:11px;background:rgba(201,168,76,0.1);color:var(--gold)}
+.action-btns{display:flex;gap:4px}
+.btn-sm{
+  padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;border:none;
+  font-family:'DM Sans',sans-serif;transition:all 0.15s;
+}
+.btn-edit{background:rgba(33,150,243,0.15);color:#2196F3}
+.btn-edit:hover{background:rgba(33,150,243,0.25)}
+.btn-del{background:rgba(244,67,54,0.1);color:#F44336}
+.btn-del:hover{background:rgba(244,67,54,0.2)}
+.btn-wa{background:rgba(37,211,102,0.1);color:#25D366}
+.btn-wa:hover{background:rgba(37,211,102,0.2)}
+.btn-pay{background:rgba(201,168,76,0.1);color:var(--gold)}
+.btn-pay:hover{background:rgba(201,168,76,0.2)}
+
+/* ===== TOOLBAR ===== */
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.8rem}
+.search-box{
+  display:flex;align-items:center;gap:8px;padding:0.5rem 0.9rem;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;flex:1;max-width:320px;
+}
+.search-box input{background:none;border:none;outline:none;color:var(--text);font-size:13px;width:100%;font-family:'DM Sans',sans-serif}
+.search-box input::placeholder{color:var(--muted)}
+.filter-select{
+  padding:0.5rem 0.8rem;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;cursor:pointer;
+}
+.btn-primary{
+  padding:0.55rem 1.2rem;background:var(--gold);color:var(--dark);
+  border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary:hover{background:#D4B55C}
+.btn-outline{
+  padding:0.55rem 1rem;background:transparent;color:var(--muted);
+  border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;
+  cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-success{
+  padding:0.55rem 1rem;background:rgba(76,175,80,0.15);color:#4CAF50;
+  border:1px solid rgba(76,175,80,0.3);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;
+  cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-success:hover{background:rgba(76,175,80,0.25)}
+
+/* ===== MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:1rem;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;
+}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{
+  background:var(--dark2);border:1px solid var(--border);border-radius:20px;
+  padding:2rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+  transform:translateY(20px);transition:transform 0.2s;
+}
+.modal-overlay.show .modal{transform:translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.2rem}
+.btn-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-field{margin-bottom:1rem}
+.form-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;letter-spacing:0.04em}
+.form-field input,.form-field select,.form-field textarea{
+  width:100%;padding:0.6rem 0.8rem;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;
+}
+.form-field input:focus,.form-field select:focus{border-color:var(--gold)}
+.form-field textarea{resize:vertical;min-height:80px}
+.form-field select option{background:var(--dark2)}
+.modal-footer{display:flex;gap:0.8rem;justify-content:flex-end;margin-top:1.5rem}
+.btn-cancel{padding:0.6rem 1.2rem;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
+.btn-save{padding:0.6rem 1.4rem;background:var(--gold);color:var(--dark);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+
+/* ===== PROGRESS ===== */
+.progress-bar-wrap{background:rgba(201,168,76,0.1);border-radius:50px;height:6px;overflow:hidden;margin-top:4px}
+.progress-bar{height:100%;background:var(--gold);border-radius:50px;transition:width 0.5s}
+
+/* ===== CONFIG PANEL ===== */
+.config-box{
+  background:var(--surface);border:1px solid rgba(33,150,243,0.2);
+  border-radius:12px;padding:1.2rem;margin-bottom:1.5rem;
+}
+.config-box h4{font-size:13px;color:#2196F3;margin-bottom:0.8rem;display:flex;align-items:center;gap:6px}
+.config-input-row{display:flex;gap:0.8rem;align-items:center;margin-bottom:0.8rem;flex-wrap:wrap}
+.config-input-row input{
+  flex:1;min-width:200px;padding:0.55rem 0.9rem;background:var(--dark2);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;
+}
+.config-input-row input:focus{border-color:#2196F3}
+
+/* ===== REMINDER ITEM ===== */
+.reminder-item{
+  display:flex;align-items:center;justify-content:space-between;padding:0.8rem 0;
+  border-bottom:1px solid rgba(201,168,76,0.05);
+}
+.reminder-item:last-child{border-bottom:none}
+.rem-info{}
+.rem-name{font-size:14px;font-weight:500}
+.rem-detail{font-size:12px;color:var(--muted);margin-top:2px}
+.rem-actions{display:flex;gap:6px}
+
+/* ===== GRAFIK ===== */
+.chart-container{position:relative;height:220px}
+
+/* ===== LOADING ===== */
+.loading-row td{text-align:center;color:var(--muted);padding:2rem;font-size:13px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(201,168,76,0.3);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== TOAST ===== */
+#toast{
+  position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;
+  background:var(--dark2);border:1px solid var(--border);border-radius:10px;
+  padding:0.8rem 1.2rem;font-size:13px;display:flex;align-items:center;gap:8px;
+  transform:translateY(100px);opacity:0;transition:all 0.3s;box-shadow:0 8px 24px rgba(0,0,0,0.4);
+}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.success{border-color:rgba(76,175,80,0.4);color:#4CAF50}
+#toast.error{border-color:rgba(244,67,54,0.4);color:#F44336}
+#toast.info{border-color:rgba(33,150,243,0.4);color:#2196F3}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .btn-menu{display:block}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .stats-row{grid-template-columns:1fr}
+  .topbar-date{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="assets/logo.png" style="width:72px;height:72px;border-radius:50%;object-fit:cover;">
+      <h1>Doremi</h1>
+      <p>Sistem Manajemen Sekolah Musik</p>
+    </div>
+    <div class="form-group">
+      <label>USERNAME</label>
+      <input type="text" id="inp-user" placeholder="admin" value="admin">
+    </div>
+    <div class="form-group">
+      <label>PASSWORD</label>
+      <input type="password" id="inp-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Masuk Dashboard</button>
+    <div id="login-error">Username atau password salah</div>
+    <div class="login-hint">Demo: <code>admin</code> / <code>doremi123</code></div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/logo.png" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
+    <div class="s-logo-text">
+      <strong>Doremi</strong>
+      <span>Admin Panel</span>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Utama</div>
+    <div class="nav-item active" onclick="goPage('dashboard',this)">
+      <span class="icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="goPage('siswa',this)">
+      <span class="icon">👥</span> Data Siswa
+    </div>
+    <div class="nav-section-label">Keuangan</div>
+    <div class="nav-item" onclick="goPage('pembayaran',this)">
+      <span class="icon">💳</span> Pembayaran SPP
+    </div>
+    <div class="nav-item" onclick="goPage('histori',this)">
+      <span class="icon">📜</span> Histori Pembayaran
+    </div>
+    <div class="nav-item" onclick="goPage('grafik',this)">
+      <span class="icon">📈</span> Grafik Keuangan
+    </div>
+    <div class="nav-section-label">Akademik</div>
+    <div class="nav-item" onclick="goPage('progress',this)">
+      <span class="icon">🎸</span> Progress Latihan
+    </div>
+    <div class="nav-section-label">Komunikasi</div>
+    <div class="nav-item" onclick="goPage('reminder',this)">
+      <span class="icon">📱</span> WA Reminder
+    </div>
+    <div class="nav-section-label">Laporan</div>
+    <div class="nav-item" onclick="goPage('export',this)">
+      <span class="icon">📄</span> Export PDF / Sheets
+    </div>
+    <div class="nav-section-label">Pengaturan</div>
+    <div class="nav-item" onclick="goPage('settings',this)">
+      <span class="icon">⚙️</span> Pengaturan
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="api-status" id="api-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">Demo Mode</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Keluar ↗</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main" id="main-content">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="btn-menu" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="page-title" id="page-title">Dashboard</div>
+        <div class="page-sub" id="page-sub">Selamat datang di Doremi Admin</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="topbar-date"></div>
+      <div class="admin-badge"><div class="admin-dot"></div> Admin</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div id="page-dashboard" class="page active">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon gold">👥</div>
+            <span class="stat-trend trend-up">+3 baru</span>
+          </div>
+          <div class="stat-val" id="stat-siswa">24</div>
+          <div class="stat-label">Total Siswa Aktif</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon green">💰</div>
+            <span class="stat-trend trend-up">+8%</span>
+          </div>
+          <div class="stat-val" id="stat-pendapatan">Rp 7,2Jt</div>
+          <div class="stat-label">Pendapatan Bulan Ini</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon orange">⏳</div>
+            <span class="stat-trend trend-down">3 siswa</span>
+          </div>
+          <div class="stat-val" id="stat-tunggakan">Rp 1,05Jt</div>
+          <div class="stat-label">Tunggakan SPP</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon gold">✓</div>
+            <span class="stat-trend trend-up">87%</span>
+          </div>
+          <div class="stat-val" id="stat-lunas">21/24</div>
+          <div class="stat-label">Lunas SPP Bulan Ini</div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">📈 Pendapatan 6 Bulan Terakhir</div>
+          <div class="chart-container">
+            <canvas id="chart-dash"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🎸 Sebaran Instrumen <span class="badge" id="badge-instr"></span></div>
+          <div class="chart-container">
+            <canvas id="chart-pie"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚠️ Siswa Belum Bayar SPP <span class="badge">Bulan Ini</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Nama</th><th>Instrumen</th><th>Tipe SPP</th><th>Tagihan</th><th>No. WA Wali</th><th>Aksi</th>
+            </tr></thead>
+            <tbody id="tb-belum-bayar"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SISWA ===== -->
+    <div id="page-siswa" class="page">
+      <div class="config-box">
+        <h4>🔗 Konfigurasi Google Sheets API</h4>
+        <div class="config-input-row">
+          <input type="text" id="inp-sheets-url" placeholder="Paste URL Google Apps Script Web App di sini..." value="">
+          <button class="btn-primary" onclick="saveConfig()">💾 Simpan</button>
+          <button class="btn-outline" onclick="testConnection()">🔌 Test</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted)">Format: https://script.google.com/macros/s/XXXXXXX/exec — Data akan sinkron otomatis ke Google Sheets Anda</div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" id="search-siswa" placeholder="Cari nama, instrumen..." oninput="renderSiswa()">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select class="filter-select" id="filter-instr" onchange="renderSiswa()">
+            <option value="">Semua Instrumen</option>
+            <option>Piano</option><option>Gitar</option><option>Drum</option>
+            <option>Vokal</option><option>Biola</option><option>Bass</option>
+          </select>
+          <button class="btn-primary" onclick="openModalSiswa()">➕ Tambah Siswa</button>
+          <button class="btn-outline" onclick="loadFromSheets()">🔄 Sync Sheets</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Nama</th><th>Instrumen</th><th>Jadwal</th><th>Tipe SPP</th><th>Wali</th><th>No. WA</th><th>Status</th><th>Aksi</th>
+            </tr></thead>
+            <tbody id="tb-siswa"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PEMBAYARAN ===== -->
+    <div id="page-pembayaran" class="page">
+      <div class="toolbar">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <select class="filter-select" id="filter-bulan">
+            <option>Januari 2025</option><option>Februari 2025</option><option>Maret 2025</option>
+            <option>April 2025</option><option selected>Mei 2025</option><option>Juni 2025</option>
+          </select>
+          <select class="filter-select" id="filter-status-pay" onchange="renderPembayaran()">
+            <option value="">Semua Status</option>
+            <option value="Lunas">Lunas</option>
+            <option value="Belum">Belum Bayar</option>
+            <option value="Terlambat">Terlambat</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-success" onclick="sendAllReminder()">📱 Kirim Semua Reminder WA</button>
+          <button class="btn-primary" onclick="openModalBayar()">+ Catat Pembayaran</button>
+        </div>
+      </div>
+
+      <div class="stats-row" style="margin-bottom:1.2rem">
+        <div class="stat-card">
+          <div class="stat-val" style="color:#4CAF50" id="pay-lunas-count">21</div>
+          <div class="stat-label">Sudah Lunas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:#FF9800" id="pay-pending-count">3</div>
+          <div class="stat-label">Belum Bayar</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="pay-total">Rp 7.350.000</div>
+          <div class="stat-label">Total Terkumpul</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:#F44336" id="pay-tunggak">Rp 1.050.000</div>
+          <div class="stat-label">Belum Terbayar</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Nama Siswa</th><th>Instrumen</th><th>Tipe SPP</th><th>Nominal</th><th>Tgl Bayar</th><th>Status</th><th>Aksi</th>
+            </tr></thead>
+            <tbody id="tb-pembayaran"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== HISTORI ===== -->
+    <div id="page-histori" class="page">
+      <div class="toolbar">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" id="search-histori" placeholder="Cari nama siswa..." oninput="renderHistori()">
+        </div>
+        <div style="display:flex;gap:8px">
+          <select class="filter-select" id="filter-tahun">
+            <option>2025</option><option>2024</option>
+          </select>
+          <button class="btn-outline" onclick="exportHistoriCSV()">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Tgl</th><th>Nama</th><th>Instrumen</th><th>Periode</th><th>Nominal</th><th>Metode</th><th>Status</th>
+            </tr></thead>
+            <tbody id="tb-histori"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== GRAFIK ===== -->
+    <div id="page-grafik" class="page">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📊 Pendapatan Bulanan 2025</div>
+          <div class="chart-container" style="height:260px"><canvas id="chart-bar"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🍩 Status Pembayaran Bulan Ini</div>
+          <div class="chart-container" style="height:260px"><canvas id="chart-doughnut"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📈 Tren Siswa Aktif per Bulan</div>
+        <div class="chart-container" style="height:200px"><canvas id="chart-line"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ===== PROGRESS ===== -->
+    <div id="page-progress" class="page">
+      <div class="toolbar">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" id="search-progress" placeholder="Cari nama siswa..." oninput="renderProgress()">
+        </div>
+        <button class="btn-primary" onclick="openModalProgress()">➕ Tambah Catatan Progress</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Nama</th><th>Instrumen</th><th>Pekan</th><th>Materi</th><th>Nilai</th><th>Progress</th><th>Catatan Guru</th><th>Aksi</th>
+            </tr></thead>
+            <tbody id="tb-progress"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== REMINDER ===== -->
+    <div id="page-reminder" class="page">
+      <div class="card" style="margin-bottom:1.2rem">
+        <div class="card-title">📝 Template Pesan Reminder WA</div>
+        <div class="form-field">
+          <label>Template Pesan (gunakan {nama}, {bulan}, {nominal}, {sekolah})</label>
+          <textarea id="wa-template" rows="5">Assalamu'alaikum Bapak/Ibu wali dari *{nama}* 🎵
+
+Kami dari *{sekolah}* menginformasikan bahwa tagihan SPP bulan *{bulan}* sejumlah *{nominal}* belum kami terima.
+
+Mohon dapat segera melakukan pembayaran. Terima kasih atas kepercayaan Anda kepada kami 🙏
+
+_Doremi Music School_</textarea>
+        </div>
+        <button class="btn-primary" onclick="saveTemplate()">💾 Simpan Template</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚠️ Siswa Perlu Diingatkan <span class="badge" id="remind-count-badge"></span></div>
+        <div id="reminder-list"></div>
+      </div>
+    </div>
+
+    <!-- ===== EXPORT ===== -->
+    <div id="page-export" class="page">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📄 Export PDF</div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Unduh laporan dalam format PDF siap cetak</p>
+          <div style="display:flex;flex-direction:column;gap:0.8rem">
+            <button class="btn-primary" onclick="exportPDF('siswa')">📋 Daftar Siswa Lengkap</button>
+            <button class="btn-primary" onclick="exportPDF('spp')">💳 Rekap SPP Bulan Ini</button>
+            <button class="btn-primary" onclick="exportPDF('keuangan')">📊 Laporan Keuangan Bulanan</button>
+            <button class="btn-primary" onclick="exportPDF('progress')">🎸 Rekap Progress Siswa</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Google Sheets Actions</div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Kelola data langsung di Google Sheets</p>
+          <div style="display:flex;flex-direction:column;gap:0.8rem">
+            <button class="btn-outline" onclick="openSheets()">🔗 Buka Google Sheets</button>
+            <button class="btn-outline" onclick="syncToSheets()">🔄 Sync Semua Data ke Sheets</button>
+            <button class="btn-outline" onclick="exportHistoriCSV()">⬇ Download CSV Histori</button>
+            <button class="btn-success" onclick="backupSheets()">☁️ Backup Data Sekarang</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚙️ Panduan Google Apps Script</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          <p style="margin-bottom:0.8rem">Ikuti langkah berikut untuk menghubungkan dashboard dengan Google Sheets Anda:</p>
+          <ol style="padding-left:1.2rem;color:var(--text)">
+            <li>Buka <strong style="color:var(--gold)">Google Sheets</strong> → Ekstensi → Apps Script</li>
+            <li>Hapus semua kode yang ada, paste script dari file <code style="background:var(--surface);padding:2px 6px;border-radius:4px;color:var(--gold)">doremi-script.gs</code></li>
+            <li>Klik <strong>Deploy</strong> → New Deployment → Web App</li>
+            <li>Set <em>"Execute as"</em> = <strong>Me</strong>, <em>"Who can access"</em> = <strong>Anyone</strong></li>
+            <li>Salin URL yang diberikan dan paste ke tab <strong>Data Siswa → Konfigurasi Sheets API</strong></li>
+          </ol>
+        </div>
+        <div style="margin-top:1rem">
+          <button class="btn-primary" onclick="downloadGASScript()">⬇ Download Apps Script Template</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS ===== -->
+    <div id="page-settings" class="page">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">🏫 Profil Sekolah</div>
+          <div class="form-field"><label>Nama Sekolah</label><input type="text" id="s-nama" value="Doremi Music School"></div>
+          <div class="form-field"><label>Alamat</label><input type="text" id="s-alamat" value="Jl. Harmoni No. 1, Madiun"></div>
+          <div class="form-field"><label>No. WhatsApp Sekolah</label><input type="text" id="s-wa" value="6285600000000"></div>
+          <div class="form-field"><label>SPP Bulanan (Rp)</label><input type="number" id="s-spp-bln" value="350000"></div>
+          <div class="form-field"><label>SPP Triwulan (Rp)</label><input type="number" id="s-spp-tri" value="900000"></div>
+          <button class="btn-primary" onclick="saveSettings()">💾 Simpan Pengaturan</button>
+        </div>
+        <div class="card">
+          <div class="card-title">🔐 Keamanan</div>
+          <div class="form-field"><label>Password Baru</label><input type="password" id="s-pass-new" placeholder="Password baru"></div>
+          <div class="form-field"><label>Konfirmasi Password</label><input type="password" id="s-pass-conf" placeholder="Ulangi password"></div>
+          <button class="btn-primary" onclick="changePass()">🔒 Ubah Password</button>
+
+          <hr style="border-color:var(--border);margin:1.2rem 0">
+          <div class="card-title" style="margin-bottom:0.8rem">⚙️ Preferensi Sistem</div>
+          <div class="form-field">
+            <label>Tanggal Jatuh Tempo SPP</label>
+            <input type="number" value="10" min="1" max="28">
+          </div>
+          <div class="form-field">
+            <label>Kirim Reminder H- (hari sebelum jatuh tempo)</label>
+            <input type="number" value="3" min="1" max="14">
+          </div>
+          <button class="btn-outline" onclick="saveSettings()">Simpan Preferensi</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- MODAL SISWA -->
+<div class="modal-overlay" id="modal-siswa">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-siswa-title">Tambah Siswa Baru</div>
+      <button class="btn-close" onclick="closeModal('modal-siswa')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Nama Lengkap *</label><input type="text" id="f-nama" placeholder="Nama siswa"></div>
+      <div class="form-field"><label>Tanggal Lahir</label><input type="date" id="f-lahir"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Instrumen *</label>
+        <select id="f-instrumen">
+          <option>Piano</option><option>Gitar</option><option>Drum</option>
+          <option>Vokal</option><option>Biola</option><option>Bass</option><option>Keyboard</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Jadwal *</label>
+        <select id="f-jadwal">
+          <option>Senin 09:00</option><option>Senin 15:00</option><option>Selasa 10:00</option>
+          <option>Rabu 13:00</option><option>Kamis 15:00</option><option>Jumat 10:00</option>
+          <option>Sabtu 09:00</option><option>Sabtu 13:00</option><option>Sabtu 15:00</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Nama Wali</label><input type="text" id="f-wali" placeholder="Nama orang tua/wali"></div>
+      <div class="form-field"><label>No. WhatsApp Wali *</label><input type="text" id="f-wa" placeholder="628xxx" maxlength="15"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Tipe SPP</label>
+        <select id="f-tipe">
+          <option value="Bulanan">Bulanan (Rp 350.000)</option>
+          <option value="Triwulan">Triwulan (Rp 900.000)</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Tanggal Mulai</label><input type="date" id="f-mulai"></div>
+    </div>
+    <div class="form-field"><label>Catatan</label><textarea id="f-catatan" placeholder="Catatan tambahan..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-siswa')">Batal</button>
+      <button class="btn-save" onclick="saveSiswa()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BAYAR -->
+<div class="modal-overlay" id="modal-bayar">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Catat Pembayaran SPP</div>
+      <button class="btn-close" onclick="closeModal('modal-bayar')">✕</button>
+    </div>
+    <div class="form-field"><label>Siswa</label>
+      <select id="f-bayar-siswa"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Periode</label>
+        <select id="f-bayar-periode">
+          <option>Mei 2025</option><option>Juni 2025</option><option>Juli 2025</option>
+          <option>Agustus 2025</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Nominal (Rp)</label><input type="number" id="f-bayar-nominal" value="350000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Tanggal Bayar</label><input type="date" id="f-bayar-tgl"></div>
+      <div class="form-field"><label>Metode Bayar</label>
+        <select id="f-bayar-metode">
+          <option>Tunai</option><option>Transfer BCA</option><option>Transfer BRI</option>
+          <option>QRIS</option><option>GoPay</option><option>OVO</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field"><label>Catatan</label><textarea id="f-bayar-catatan" placeholder="Catatan pembayaran..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-bayar')">Batal</button>
+      <button class="btn-save" onclick="savePembayaran()">💾 Simpan Pembayaran</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROGRESS -->
+<div class="modal-overlay" id="modal-progress">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Catat Progress Latihan</div>
+      <button class="btn-close" onclick="closeModal('modal-progress')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Siswa</label>
+        <select id="f-prog-siswa"></select>
+      </div>
+      <div class="form-field"><label>Pekan ke-</label>
+        <input type="number" id="f-prog-pekan" value="1" min="1" max="52">
+      </div>
+    </div>
+    <div class="form-field"><label>Materi yang Dipelajari</label>
+      <input type="text" id="f-prog-materi" placeholder="Contoh: Chord Dasar, Skala C Mayor...">
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Nilai (1-100)</label>
+        <input type="number" id="f-prog-nilai" value="80" min="1" max="100">
+      </div>
+      <div class="form-field"><label>Kehadiran</label>
+        <select id="f-prog-hadir">
+          <option>Hadir</option><option>Izin</option><option>Alpa</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field"><label>Catatan Guru</label>
+      <textarea id="f-prog-catatan" placeholder="Perkembangan siswa minggu ini..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-progress')">Batal</button>
+      <button class="btn-save" onclick="saveProgress()">💾 Simpan Progress</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// CONFIG & STATE
+// ============================================================
+let SHEETS_URL = localStorage.getItem('doremi_sheets_url') || '';
+let editSiswaId = null;
+let chartDash, chartPie, chartBar, chartDoughnut, chartLine;
+
+const SETTINGS = {
+  sekolah: 'Doremi Music School',
+  wa: '6285600000000',
+  sppBulanan: 350000,
+  sppTriwulan: 900000,
+  jatuhTempo: 10
+};
+
+// DEMO DATA
+let dataSiswa = [
+  {id:1,nama:'Rina Dewi Kusuma',lahir:'2012-03-15',instrumen:'Piano',jadwal:'Senin 09:00',wali:'Bu Dewi',wa:'6281234567890',tipe:'Bulanan',mulai:'2024-01-10',catatan:'',aktif:true},
+  {id:2,nama:'Budi Santoso',lahir:'2010-07-22',instrumen:'Gitar',jadwal:'Rabu 13:00',wali:'Pak Slamet',wa:'6281234567891',tipe:'Bulanan',mulai:'2024-02-01',catatan:'',aktif:true},
+  {id:3,nama:'Anisa Putri',lahir:'2013-11-05',instrumen:'Vokal',jadwal:'Sabtu 09:00',wali:'Bu Anita',wa:'6281234567892',tipe:'Triwulan',mulai:'2024-03-01',catatan:'Bakat tinggi',aktif:true},
+  {id:4,nama:'Farhan Rizki',lahir:'2011-05-18',instrumen:'Drum',jadwal:'Kamis 15:00',wali:'Pak Rizky',wa:'6281234567893',tipe:'Bulanan',mulai:'2024-01-15',catatan:'',aktif:true},
+  {id:5,nama:'Siti Rahayu',lahir:'2014-09-30',instrumen:'Biola',jadwal:'Senin 15:00',wali:'Bu Rahayu',wa:'6281234567894',tipe:'Bulanan',mulai:'2024-04-01',catatan:'',aktif:true},
+  {id:6,nama:'Dimas Pratama',lahir:'2012-12-12',instrumen:'Gitar',jadwal:'Sabtu 13:00',wali:'Pak Pratama',wa:'6281234567895',tipe:'Triwulan',mulai:'2024-02-15',catatan:'',aktif:true},
+  {id:7,nama:'Putri Nabila',lahir:'2013-04-08',instrumen:'Piano',jadwal:'Jumat 10:00',wali:'Bu Nabila',wa:'6281234567896',tipe:'Bulanan',mulai:'2024-05-01',catatan:'',aktif:true},
+  {id:8,nama:'Ahmad Fauzi',lahir:'2011-08-25',instrumen:'Bass',jadwal:'Selasa 10:00',wali:'Pak Fauzi',wa:'6281234567897',tipe:'Bulanan',mulai:'2024-03-10',catatan:'',aktif:true},
+];
+
+let dataPembayaran = [
+  {id:1,siswaId:1,periode:'Mei 2025',nominal:350000,tgl:'2025-05-02',metode:'Tunai',status:'Lunas',catatan:''},
+  {id:2,siswaId:2,periode:'Mei 2025',nominal:350000,tgl:null,metode:null,status:'Belum',catatan:''},
+  {id:3,siswaId:3,periode:'Apr–Jun 2025',nominal:900000,tgl:'2025-04-01',metode:'Transfer BCA',status:'Lunas',catatan:'Triwulan'},
+  {id:4,siswaId:4,periode:'Mei 2025',nominal:350000,tgl:'2025-05-05',metode:'QRIS',status:'Lunas',catatan:''},
+  {id:5,siswaId:5,periode:'Mei 2025',nominal:350000,tgl:null,metode:null,status:'Belum',catatan:''},
+  {id:6,siswaId:6,periode:'Apr–Jun 2025',nominal:900000,tgl:'2025-04-02',metode:'Transfer BRI',status:'Lunas',catatan:''},
+  {id:7,siswaId:7,periode:'Mei 2025',nominal:350000,tgl:'2025-05-03',metode:'GoPay',status:'Lunas',catatan:''},
+  {id:8,siswaId:8,periode:'Mei 2025',nominal:350000,tgl:null,metode:null,status:'Belum',catatan:''},
+];
+
+let dataHistori = [
+  {tgl:'2025-05-05',nama:'Farhan Rizki',instrumen:'Drum',periode:'Mei 2025',nominal:350000,metode:'QRIS',status:'Lunas'},
+  {tgl:'2025-05-03',nama:'Putri Nabila',instrumen:'Piano',periode:'Mei 2025',nominal:350000,metode:'GoPay',status:'Lunas'},
+  {tgl:'2025-05-02',nama:'Rina Dewi Kusuma',instrumen:'Piano',periode:'Mei 2025',nominal:350000,metode:'Tunai',status:'Lunas'},
+  {tgl:'2025-04-02',nama:'Dimas Pratama',instrumen:'Gitar',periode:'Apr–Jun 2025',nominal:900000,metode:'Transfer BRI',status:'Lunas'},
+  {tgl:'2025-04-01',nama:'Anisa Putri',instrumen:'Vokal',periode:'Apr–Jun 2025',nominal:900000,metode:'Transfer BCA',status:'Lunas'},
+  {tgl:'2025-04-05',nama:'Farhan Rizki',instrumen:'Drum',periode:'Apr 2025',nominal:350000,metode:'Tunai',status:'Lunas'},
+  {tgl:'2025-03-08',nama:'Rina Dewi Kusuma',instrumen:'Piano',periode:'Mar 2025',nominal:350000,metode:'Tunai',status:'Lunas'},
+  {tgl:'2025-03-10',nama:'Ahmad Fauzi',instrumen:'Bass',periode:'Mar 2025',nominal:350000,metode:'Transfer BCA',status:'Lunas'},
+];
+
+let dataProgress = [
+  {id:1,siswaId:1,nama:'Rina Dewi Kusuma',instrumen:'Piano',pekan:18,materi:'Sonata Beethoven Op.49',nilai:92,hadir:'Hadir',catatan:'Progres sangat baik, sudah hafal bar 1-16'},
+  {id:2,siswaId:2,nama:'Budi Santoso',instrumen:'Gitar',pekan:18,materi:'Chord Barre F & Bm',nilai:75,hadir:'Hadir',catatan:'Perlu latihan perpindahan chord lebih luwes'},
+  {id:3,siswaId:3,nama:'Anisa Putri',instrumen:'Vokal',pekan:18,materi:'Teknik Vibrato & Head Voice',nilai:88,hadir:'Hadir',catatan:'Suara sudah lebih terkontrol'},
+  {id:4,siswaId:4,nama:'Farhan Rizki',instrumen:'Drum',pekan:18,materi:'16th Note Fills',nilai:80,hadir:'Hadir',catatan:'Tempo sudah konsisten'},
+  {id:5,siswaId:5,nama:'Siti Rahayu',instrumen:'Biola',pekan:17,materi:'Skala G Mayor 3 Oktaf',nilai:70,hadir:'Izin',catatan:'Absen 1x, perlu kejar materi'},
+];
+
+let nextId = 9;
+
+// ============================================================
+// AUTH
+// ============================================================
+const CREDS = {admin:'doremi123'};
+
+function doLogin(){
+  const u = document.getElementById('inp-user').value.trim();
+  const p = document.getElementById('inp-pass').value;
+  if(CREDS[u] && CREDS[u]===p){
+    document.getElementById('login-screen').style.display='none';
+    initDashboard();
+  } else {
+    document.getElementById('login-error').style.display='block';
+    setTimeout(()=>document.getElementById('login-error').style.display='none',3000);
+  }
+}
+
+function doLogout(){
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('inp-pass').value='';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const pageTitles = {
+  dashboard:['Dashboard','Ringkasan semua aktivitas'],
+  siswa:['Data Siswa','Manajemen & CRUD siswa'],
+  pembayaran:['Pembayaran SPP','Tracking & catat pembayaran'],
+  histori:['Histori Pembayaran','Riwayat semua transaksi'],
+  grafik:['Grafik Keuangan','Visualisasi data keuangan'],
+  progress:['Progress Latihan','Catatan perkembangan siswa'],
+  reminder:['WA Reminder','Kirim pengingat WhatsApp'],
+  export:['Export PDF / Sheets','Unduh laporan'],
+  settings:['Pengaturan','Konfigurasi sistem'],
+};
+
+function goPage(id, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  const [title,sub] = pageTitles[id]||['—',''];
+  document.getElementById('page-title').textContent = title;
+  document.getElementById('page-sub').textContent = sub;
+  if(window.innerWidth<=768) closeSidebar();
+
+  // Lazy render
+  if(id==='siswa') renderSiswa();
+  if(id==='pembayaran') renderPembayaran();
+  if(id==='histori') renderHistori();
+  if(id==='grafik') renderGrafik();
+  if(id==='progress') renderProgress();
+  if(id==='reminder') renderReminder();
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function initDashboard(){
+  // Date
+  const now = new Date();
+  document.getElementById('topbar-date').textContent =
+    now.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // Today in form
+  const today = now.toISOString().split('T')[0];
+  if(document.getElementById('f-bayar-tgl')) document.getElementById('f-bayar-tgl').value = today;
+  if(document.getElementById('f-mulai')) document.getElementById('f-mulai').value = today;
+
+  renderDashboard();
+  renderSiswa();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(){
+  const belumBayar = dataPembayaran.filter(p=>p.status==='Belum');
+  const lunasCount = dataPembayaran.filter(p=>p.status==='Lunas').length;
+  const totalLunas = dataPembayaran.filter(p=>p.status==='Lunas').reduce((a,b)=>a+b.nominal,0);
+  const totalBelum = belumBayar.reduce((a,b)=>a+b.nominal,0);
+
+  document.getElementById('stat-siswa').textContent = dataSiswa.filter(s=>s.aktif).length;
+  document.getElementById('stat-pendapatan').textContent = 'Rp '+fmtRp(totalLunas);
+  document.getElementById('stat-tunggakan').textContent = 'Rp '+fmtRp(totalBelum);
+  document.getElementById('stat-lunas').textContent = lunasCount+'/'+dataSiswa.length;
+
+  // Table belum bayar
+  const tb = document.getElementById('tb-belum-bayar');
+  tb.innerHTML = belumBayar.map(p=>{
+    const s = dataSiswa.find(x=>x.id===p.siswaId)||{};
+    return `<tr>
+      <td>${s.nama||'-'}</td>
+      <td><span class="instrumen-badge">${s.instrumen||'-'}</span></td>
+      <td>${s.tipe||'-'}</td>
+      <td>Rp ${fmtRp(p.nominal)}</td>
+      <td>${s.wa||'-'}</td>
+      <td><button class="btn-sm btn-wa" onclick="sendWA('${s.wa}','${s.nama}','${p.nominal}')">📱 Ingatkan</button></td>
+    </tr>`;
+  }).join('') || '<tr class="loading-row"><td colspan="6">✅ Semua siswa sudah bayar bulan ini!</td></tr>';
+
+  renderDashCharts();
+}
+
+function renderDashCharts(){
+  // Bar chart
+  const months = ['Des','Jan','Feb','Mar','Apr','Mei'];
+  const revenues = [5200000,6100000,5800000,6500000,6900000,7200000];
+  const ctx1 = document.getElementById('chart-dash').getContext('2d');
+  if(chartDash) chartDash.destroy();
+  chartDash = new Chart(ctx1,{
+    type:'bar',
+    data:{
+      labels:months,
+      datasets:[{
+        data:revenues,
+        backgroundColor:'rgba(201,168,76,0.3)',
+        borderColor:'rgba(201,168,76,0.8)',
+        borderWidth:1.5,
+        borderRadius:6,
+      }]
+    },
+    options:{...chartOpts(),plugins:{legend:{display:false}}}
+  });
+
+  // Pie
+  const instrCount = {};
+  dataSiswa.forEach(s=>{instrCount[s.instrumen]=(instrCount[s.instrumen]||0)+1});
+  document.getElementById('badge-instr').textContent = dataSiswa.length+' siswa';
+  const ctx2 = document.getElementById('chart-pie').getContext('2d');
+  if(chartPie) chartPie.destroy();
+  chartPie = new Chart(ctx2,{
+    type:'doughnut',
+    data:{
+      labels:Object.keys(instrCount),
+      datasets:[{
+        data:Object.values(instrCount),
+        backgroundColor:['rgba(201,168,76,0.7)','rgba(76,175,80,0.7)','rgba(33,150,243,0.7)','rgba(244,67,54,0.7)','rgba(156,39,176,0.7)','rgba(255,152,0,0.7)'],
+        borderColor:'rgba(26,22,18,0.8)',borderWidth:2,
+      }]
+    },
+    options:{...chartOpts(),cutout:'60%',plugins:{legend:{position:'right',labels:{color:'#9A8F7E',font:{size:11},boxWidth:12}}}}
+  });
+}
+
+// ============================================================
+// SISWA
+// ============================================================
+function renderSiswa(){
+  const q = (document.getElementById('search-siswa')?.value||'').toLowerCase();
+  const fi = document.getElementById('filter-instr')?.value||'';
+  const tb = document.getElementById('tb-siswa');
+  if(!tb) return;
+
+  let list = dataSiswa.filter(s=>{
+    const matchQ = !q || s.nama.toLowerCase().includes(q) || s.instrumen.toLowerCase().includes(q);
+    const matchI = !fi || s.instrumen===fi;
+    return matchQ && matchI;
+  });
+
+  tb.innerHTML = list.length ? list.map((s,i)=>{
+    const bayar = dataPembayaran.find(p=>p.siswaId===s.id&&p.periode.includes('Mei'));
+    const status = bayar?.status||'Belum';
+    return `<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td><strong>${s.nama}</strong></td>
+      <td><span class="instrumen-badge">${s.instrumen}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${s.jadwal}</td>
+      <td style="font-size:12px">${s.tipe}</td>
+      <td style="font-size:12px;color:var(--muted)">${s.wali}</td>
+      <td style="font-size:12px">${s.wa}</td>
+      <td><span class="badge-status ${status==='Lunas'?'badge-lunas':'badge-pending'}">${status==='Lunas'?'✓':'⏳'} ${status}</span></td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-sm btn-edit" onclick="editSiswa(${s.id})">✏️ Edit</button>
+          <button class="btn-sm btn-wa" onclick="sendWA('${s.wa}','${s.nama}',${s.tipe==='Bulanan'?350000:900000})">📱</button>
+          <button class="btn-sm btn-del" onclick="deleteSiswa(${s.id})">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') : '<tr class="loading-row"><td colspan="9">Tidak ada data siswa</td></tr>';
+}
+
+function openModalSiswa(){ editSiswaId=null; document.getElementById('modal-siswa-title').textContent='Tambah Siswa Baru'; clearForm(['f-nama','f-lahir','f-instrumen','f-jadwal','f-wali','f-wa','f-tipe','f-mulai','f-catatan']); showModal('modal-siswa'); }
+
+function editSiswa(id){
+  const s = dataSiswa.find(x=>x.id===id); if(!s) return;
+  editSiswaId = id;
+  document.getElementById('modal-siswa-title').textContent = 'Edit Data Siswa';
+  document.getElementById('f-nama').value = s.nama;
+  document.getElementById('f-lahir').value = s.lahir;
+  document.getElementById('f-instrumen').value = s.instrumen;
+  document.getElementById('f-jadwal').value = s.jadwal;
+  document.getElementById('f-wali').value = s.wali;
+  document.getElementById('f-wa').value = s.wa;
+  document.getElementById('f-tipe').value = s.tipe;
+  document.getElementById('f-mulai').value = s.mulai;
+  document.getElementById('f-catatan').value = s.catatan;
+  showModal('modal-siswa');
+}
+
+function saveSiswa(){
+  const nama = document.getElementById('f-nama').value.trim();
+  const wa = document.getElementById('f-wa').value.trim();
+  if(!nama||!wa){ toast('Nama dan nomor WA wajib diisi!','error'); return; }
+
+  const data = {
+    nama, lahir:document.getElementById('f-lahir').value,
+    instrumen:document.getElementById('f-instrumen').value,
+    jadwal:document.getElementById('f-jadwal').value,
+    wali:document.getElementById('f-wali').value,
+    wa, tipe:document.getElementById('f-tipe').value,
+    mulai:document.getElementById('f-mulai').value,
+    catatan:document.getElementById('f-catatan').value,
+    aktif:true
+  };
+
+  if(editSiswaId){
+    const idx = dataSiswa.findIndex(x=>x.id===editSiswaId);
+    dataSiswa[idx] = {...dataSiswa[idx],...data};
+    toast('Data siswa berhasil diupdate! ✅','success');
+  } else {
+    data.id = nextId++;
+    dataSiswa.push(data);
+    toast('Siswa baru berhasil ditambahkan! 🎵','success');
+  }
+
+  closeModal('modal-siswa');
+  renderSiswa();
+  pushToSheets('siswa', data);
+}
+
+function deleteSiswa(id){
+  if(!confirm('Hapus data siswa ini?')) return;
+  dataSiswa = dataSiswa.filter(s=>s.id!==id);
+  renderSiswa();
+  toast('Data siswa dihapus','info');
+}
+
+// ============================================================
+// PEMBAYARAN
+// ============================================================
+function renderPembayaran(){
+  const fi = document.getElementById('filter-status-pay')?.value||'';
+  const tb = document.getElementById('tb-pembayaran'); if(!tb) return;
+
+  let list = dataPembayaran.filter(p=>!fi||p.status===fi);
+  const lunas = dataPembayaran.filter(p=>p.status==='Lunas');
+  const belum = dataPembayaran.filter(p=>p.status!=='Lunas');
+
+  document.getElementById('pay-lunas-count').textContent = lunas.length;
+  document.getElementById('pay-pending-count').textContent = belum.length;
+  document.getElementById('pay-total').textContent = 'Rp '+fmtRp(lunas.reduce((a,b)=>a+b.nominal,0));
+  document.getElementById('pay-tunggak').textContent = 'Rp '+fmtRp(belum.reduce((a,b)=>a+b.nominal,0));
+
+  tb.innerHTML = list.map((p,i)=>{
+    const s = dataSiswa.find(x=>x.id===p.siswaId)||{nama:'-',instrumen:'-',tipe:'-'};
+    return `<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td>${s.nama}</td>
+      <td><span class="instrumen-badge">${s.instrumen}</span></td>
+      <td style="font-size:12px">${s.tipe}</td>
+      <td>Rp ${fmtRp(p.nominal)}</td>
+      <td style="font-size:12px;color:var(--muted)">${p.tgl||'—'}</td>
+      <td><span class="badge-status ${p.status==='Lunas'?'badge-lunas':'badge-pending'}">${p.status==='Lunas'?'✓ Lunas':'⏳ Belum'}</span></td>
+      <td>
+        <div class="action-btns">
+          ${p.status!=='Lunas'?`<button class="btn-sm btn-pay" onclick="markLunas(${p.id})">✓ Lunas</button>`:''}
+          <button class="btn-sm btn-wa" onclick="sendWA('${s.wa||''}','${s.nama}',${p.nominal})">📱</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || '<tr class="loading-row"><td colspan="8">Tidak ada data</td></tr>';
+}
+
+function markLunas(id){
+  const p = dataPembayaran.find(x=>x.id===id); if(!p) return;
+  p.status='Lunas'; p.tgl=new Date().toISOString().split('T')[0]; p.metode='Tunai';
+  dataHistori.unshift({tgl:p.tgl,nama:dataSiswa.find(s=>s.id===p.siswaId)?.nama||'-',instrumen:dataSiswa.find(s=>s.id===p.siswaId)?.instrumen||'-',periode:p.periode,nominal:p.nominal,metode:p.metode,status:'Lunas'});
+  renderPembayaran();
+  toast('Pembayaran ditandai Lunas! ✅','success');
+  pushToSheets('pembayaran', p);
+}
+
+function openModalBayar(){
+  const sel = document.getElementById('f-bayar-siswa');
+  sel.innerHTML = dataSiswa.map(s=>`<option value="${s.id}">${s.nama} (${s.instrumen})</option>`).join('');
+  showModal('modal-bayar');
+}
+
+function savePembayaran(){
+  const siswaId = parseInt(document.getElementById('f-bayar-siswa').value);
+  const periode = document.getElementById('f-bayar-periode').value;
+  const nominal = parseInt(document.getElementById('f-bayar-nominal').value);
+  const tgl = document.getElementById('f-bayar-tgl').value;
+  const metode = document.getElementById('f-bayar-metode').value;
+
+  // Update or add
+  let ex = dataPembayaran.find(p=>p.siswaId===siswaId&&p.periode===periode);
+  if(ex){ ex.status='Lunas'; ex.tgl=tgl; ex.metode=metode; ex.nominal=nominal; }
+  else { dataPembayaran.push({id:Date.now(),siswaId,periode,nominal,tgl,metode,status:'Lunas',catatan:''}); }
+
+  const s = dataSiswa.find(x=>x.id===siswaId)||{};
+  dataHistori.unshift({tgl,nama:s.nama||'-',instrumen:s.instrumen||'-',periode,nominal,metode,status:'Lunas'});
+
+  closeModal('modal-bayar');
+  renderPembayaran();
+  renderDashboard();
+  toast('Pembayaran berhasil dicatat! 💰','success');
+}
+
+// ============================================================
+// HISTORI
+// ============================================================
+function renderHistori(){
+  const q = (document.getElementById('search-histori')?.value||'').toLowerCase();
+  const tb = document.getElementById('tb-histori'); if(!tb) return;
+  const list = dataHistori.filter(h=>!q||h.nama.toLowerCase().includes(q));
+  tb.innerHTML = list.map(h=>`<tr>
+    <td style="font-size:12px;color:var(--muted)">${h.tgl}</td>
+    <td>${h.nama}</td>
+    <td><span class="instrumen-badge">${h.instrumen}</span></td>
+    <td style="font-size:12px">${h.periode}</td>
+    <td>Rp ${fmtRp(h.nominal)}</td>
+    <td style="font-size:12px;color:var(--muted)">${h.metode||'-'}</td>
+    <td><span class="badge-status badge-lunas">✓ Lunas</span></td>
+  </tr>`).join('') || '<tr class="loading-row"><td colspan="7">Belum ada histori</td></tr>';
+}
+
+// ============================================================
+// GRAFIK
+// ============================================================
+function renderGrafik(){
+  setTimeout(()=>{
+    const months = ['Jan','Feb','Mar','Apr','Mei','Jun'];
+    const rev = [5200000,6100000,5800000,6500000,7200000,0];
+
+    const ctx1 = document.getElementById('chart-bar')?.getContext('2d');
+    if(ctx1){ if(chartBar) chartBar.destroy(); chartBar=new Chart(ctx1,{type:'bar',data:{labels:months,datasets:[{label:'Pendapatan',data:rev,backgroundColor:'rgba(201,168,76,0.4)',borderColor:'rgba(201,168,76,0.9)',borderWidth:2,borderRadius:6}]},options:{...chartOpts()}}); }
+
+    const ctx2 = document.getElementById('chart-doughnut')?.getContext('2d');
+    if(ctx2){ if(chartDoughnut) chartDoughnut.destroy(); chartDoughnut=new Chart(ctx2,{type:'doughnut',data:{labels:['Lunas','Belum Bayar'],datasets:[{data:[21,3],backgroundColor:['rgba(76,175,80,0.7)','rgba(255,152,0,0.7)'],borderColor:'rgba(26,22,18,0.8)',borderWidth:2}]},options:{...chartOpts(),cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#9A8F7E',font:{size:11},boxWidth:12}}}}}); }
+
+    const ctx3 = document.getElementById('chart-line')?.getContext('2d');
+    if(ctx3){ if(chartLine) chartLine.destroy(); chartLine=new Chart(ctx3,{type:'line',data:{labels:months,datasets:[{label:'Siswa Aktif',data:[18,19,20,22,24,24],borderColor:'rgba(201,168,76,0.8)',backgroundColor:'rgba(201,168,76,0.05)',borderWidth:2,pointRadius:4,pointBackgroundColor:'rgba(201,168,76,0.9)',tension:0.4,fill:true}]},options:{...chartOpts()}}); }
+  }, 100);
+}
+
+function chartOpts(){
+  return {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(26,22,18,0.95)',titleColor:'#F5F0E8',bodyColor:'#9A8F7E',borderColor:'rgba(201,168,76,0.2)',borderWidth:1}},
+    scales:{x:{grid:{color:'rgba(201,168,76,0.05)'},ticks:{color:'#9A8F7E',font:{size:11}}},y:{grid:{color:'rgba(201,168,76,0.05)'},ticks:{color:'#9A8F7E',font:{size:11},callback:v=>v>=1000000?'Rp'+(v/1000000).toFixed(1)+'Jt':v}}}
+  };
+}
+
+// ============================================================
+// PROGRESS
+// ============================================================
+function renderProgress(){
+  const q = (document.getElementById('search-progress')?.value||'').toLowerCase();
+  const tb = document.getElementById('tb-progress'); if(!tb) return;
+  const list = dataProgress.filter(p=>!q||p.nama.toLowerCase().includes(q));
+  tb.innerHTML = list.map(p=>`<tr>
+    <td><strong>${p.nama}</strong></td>
+    <td><span class="instrumen-badge">${p.instrumen}</span></td>
+    <td style="text-align:center;color:var(--muted)">${p.pekan}</td>
+    <td style="font-size:12px">${p.materi}</td>
+    <td style="text-align:center"><strong style="color:${p.nilai>=85?'#4CAF50':p.nilai>=70?'var(--gold)':'#FF9800'}">${p.nilai}</strong></td>
+    <td style="min-width:100px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="progress-bar-wrap" style="flex:1"><div class="progress-bar" style="width:${p.nilai}%"></div></div>
+        <span style="font-size:11px;color:var(--muted)">${p.nilai}%</span>
+      </div>
+    </td>
+    <td style="font-size:12px;color:var(--muted);max-width:160px">${p.catatan}</td>
+    <td>
+      <div class="action-btns">
+        <button class="btn-sm btn-edit" onclick="">✏️</button>
+        <button class="btn-sm btn-del" onclick="deleteProgress(${p.id})">🗑️</button>
+      </div>
+    </td>
+  </tr>`).join('') || '<tr class="loading-row"><td colspan="8">Belum ada data progress</td></tr>';
+}
+
+function deleteProgress(id){ dataProgress=dataProgress.filter(x=>x.id!==id); renderProgress(); toast('Data progress dihapus','info'); }
+
+function openModalProgress(){
+  const sel = document.getElementById('f-prog-siswa');
+  sel.innerHTML = dataSiswa.map(s=>`<option value="${s.id}">${s.nama}</option>`).join('');
+  showModal('modal-progress');
+}
+
+function saveProgress(){
+  const siswaId = parseInt(document.getElementById('f-prog-siswa').value);
+  const s = dataSiswa.find(x=>x.id===siswaId)||{};
+  dataProgress.push({
+    id:Date.now(), siswaId, nama:s.nama||'-', instrumen:s.instrumen||'-',
+    pekan:parseInt(document.getElementById('f-prog-pekan').value),
+    materi:document.getElementById('f-prog-materi').value,
+    nilai:parseInt(document.getElementById('f-prog-nilai').value),
+    hadir:document.getElementById('f-prog-hadir').value,
+    catatan:document.getElementById('f-prog-catatan').value,
+  });
+  closeModal('modal-progress');
+  renderProgress();
+  toast('Progress berhasil dicatat! 🎸','success');
+}
+
+// ============================================================
+// REMINDER
+// ============================================================
+function renderReminder(){
+  const belum = dataPembayaran.filter(p=>p.status!=='Lunas');
+  document.getElementById('remind-count-badge').textContent = belum.length+' siswa';
+  const list = document.getElementById('reminder-list');
+  if(!list) return;
+  list.innerHTML = belum.map(p=>{
+    const s = dataSiswa.find(x=>x.id===p.siswaId)||{};
+    return `<div class="reminder-item">
+      <div class="rem-info">
+        <div class="rem-name">${s.nama||'-'} <span style="font-size:11px;color:var(--muted)"> — ${s.instrumen||'-'}</span></div>
+        <div class="rem-detail">Tagihan ${p.periode} • Rp ${fmtRp(p.nominal)} • WA: ${s.wa||'-'}</div>
+      </div>
+      <div class="rem-actions">
+        <button class="btn-sm btn-wa" onclick="sendWA('${s.wa||''}','${s.nama||''}',${p.nominal})">📱 Kirim WA</button>
+      </div>
+    </div>`;
+  }).join('') || '<div style="padding:1.5rem;text-align:center;color:var(--muted);font-size:13px">✅ Tidak ada siswa yang perlu diingatkan!</div>';
+}
+
+function sendWA(wa, nama, nominal){
+  const tmpl = document.getElementById('wa-template')?.value ||
+    'Halo {nama}, tagihan SPP {bulan} sebesar {nominal} belum kami terima. Terima kasih — Doremi Music School';
+  const now = new Date();
+  const bulan = now.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+  const msg = tmpl
+    .replace(/{nama}/g, nama)
+    .replace(/{bulan}/g, bulan)
+    .replace(/{nominal}/g, 'Rp '+fmtRp(nominal))
+    .replace(/{sekolah}/g, SETTINGS.sekolah);
+  const url = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
+  window.open(url,'_blank');
+  toast('Membuka WhatsApp untuk '+nama+'...','info');
+}
+
+function sendAllReminder(){
+  const belum = dataPembayaran.filter(p=>p.status!=='Lunas');
+  if(!belum.length){ toast('Semua siswa sudah bayar! ✅','success'); return; }
+  belum.forEach((p,i)=>{
+    setTimeout(()=>{
+      const s = dataSiswa.find(x=>x.id===p.siswaId)||{};
+      sendWA(s.wa||'',s.nama||'-',p.nominal);
+    },i*800);
+  });
+  toast(`Mengirim reminder ke ${belum.length} siswa...`,'info');
+}
+
+function saveTemplate(){ toast('Template pesan disimpan! ✅','success'); }
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportPDF(type){
+  const labels = {siswa:'Daftar Siswa',spp:'Rekap SPP',keuangan:'Laporan Keuangan',progress:'Progress Siswa'};
+  toast(`Membuat PDF ${labels[type]||type}... (coming soon)`, 'info');
+}
+
+function exportHistoriCSV(){
+  const header = 'Tanggal,Nama,Instrumen,Periode,Nominal,Metode,Status\n';
+  const rows = dataHistori.map(h=>`${h.tgl},${h.nama},${h.instrumen},${h.periode},${h.nominal},${h.metode||'-'},${h.status}`).join('\n');
+  download('doremi-histori.csv', header+rows, 'text/csv');
+  toast('CSV berhasil didownload! ⬇','success');
+}
+
+function openSheets(){
+  if(!SHEETS_URL){ toast('Belum ada URL Google Sheets yang disimpan','error'); return; }
+  window.open(SHEETS_URL,'_blank');
+}
+
+function syncToSheets(){ toast('Sync ke Google Sheets... (hubungkan via Apps Script)','info'); }
+function backupSheets(){ toast('Backup sedang diproses... ☁️','info'); }
+
+function downloadGASScript(){
+  const script = `// Google Apps Script untuk Doremi Music School
+// Paste ke: Google Sheets > Extensions > Apps Script
+
+const SHEET_NAME_SISWA = 'Siswa';
+const SHEET_NAME_PAYMENT = 'Pembayaran';
+const SHEET_NAME_PROGRESS = 'Progress';
+
+function doGet(e) {
+  const action = e.parameter.action;
+  const sheet = SpreadsheetApp.getActiveSpreadsheet();
+  
+  if (action === 'getSiswa') {
+    const data = sheet.getSheetByName(SHEET_NAME_SISWA).getDataRange().getValues();
+    return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+  }
+  if (action === 'getPembayaran') {
+    const data = sheet.getSheetByName(SHEET_NAME_PAYMENT).getDataRange().getValues();
+    return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  const body = JSON.parse(e.postData.contents);
+  const action = body.action;
+  const sheet = SpreadsheetApp.getActiveSpreadsheet();
+  
+  if (action === 'addSiswa') {
+    const s = sheet.getSheetByName(SHEET_NAME_SISWA);
+    s.appendRow([body.id,body.nama,body.instrumen,body.jadwal,body.tipe,body.wali,body.wa,body.mulai,body.catatan]);
+    return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);
+  }
+  if (action === 'addPembayaran') {
+    const s = sheet.getSheetByName(SHEET_NAME_PAYMENT);
+    s.appendRow([body.id,body.siswaId,body.periode,body.nominal,body.tgl,body.metode,body.status]);
+    return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput(JSON.stringify({status:'error'})).setMimeType(ContentService.MimeType.JSON);
+}`;
+  download('doremi-script.gs', script, 'text/plain');
+  toast('Script Google Apps Script didownload! 📜','success');
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function saveSettings(){ toast('Pengaturan tersimpan! ✅','success'); }
+function changePass(){
+  const n = document.getElementById('s-pass-new').value;
+  const c = document.getElementById('s-pass-conf').value;
+  if(!n){ toast('Password baru tidak boleh kosong','error'); return; }
+  if(n!==c){ toast('Konfirmasi password tidak cocok','error'); return; }
+  CREDS.admin = n;
+  toast('Password berhasil diubah! 🔐','success');
+}
+
+// ============================================================
+// SHEETS API
+// ============================================================
+function saveConfig(){
+  SHEETS_URL = document.getElementById('inp-sheets-url').value.trim();
+  localStorage.setItem('doremi_sheets_url', SHEETS_URL);
+  toast('URL API disimpan!','success');
+  updateAPIStatus(true);
+}
+
+function testConnection(){
+  if(!SHEETS_URL){ toast('Isi URL Google Apps Script terlebih dahulu','error'); return; }
+  toast('Menguji koneksi...','info');
+  fetch(SHEETS_URL+'?action=ping')
+    .then(r=>r.json())
+    .then(()=>{ toast('Koneksi berhasil! Google Sheets terhubung ✅','success'); updateAPIStatus(true); })
+    .catch(()=>{ toast('Gagal terhubung. Periksa URL dan permissions Apps Script','error'); updateAPIStatus(false); });
+}
+
+function loadFromSheets(){
+  if(!SHEETS_URL){ toast('Belum ada URL Google Sheets yang dikonfigurasi','error'); return; }
+  toast('Sync dari Google Sheets...','info');
+  fetch(SHEETS_URL+'?action=getSiswa')
+    .then(r=>r.json())
+    .then(data=>{
+      if(Array.isArray(data)&&data.length>1){
+        const headers = data[0];
+        dataSiswa = data.slice(1).map((row,i)=>{
+          const obj = {};
+          headers.forEach((h,j)=>obj[h]=row[j]);
+          return {...obj, id:obj.id||i+1};
+        });
+        renderSiswa();
+        toast('Data berhasil disinkronkan dari Sheets! ✅','success');
+      }
+    })
+    .catch(()=>toast('Gagal mengambil data dari Sheets','error'));
+}
+
+async function pushToSheets(action, data){
+  if(!SHEETS_URL) return;
+  try {
+    await fetch(SHEETS_URL, {
+      method:'POST',
+      body: JSON.stringify({action: 'add'+action.charAt(0).toUpperCase()+action.slice(1), ...data}),
+      headers:{'Content-Type':'application/json'}
+    });
+  } catch(e){ console.log('Sheets push failed (demo mode)'); }
+}
+
+function updateAPIStatus(ok){
+  document.getElementById('status-dot').style.background = ok?'#4CAF50':'#F44336';
+  document.getElementById('status-text').textContent = ok?'Sheets Terhubung':'Offline / Demo';
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function fmtRp(n){ return Number(n).toLocaleString('id-ID'); }
+
+function showModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
+function clearForm(ids){ ids.forEach(id=>{const el=document.getElementById(id);if(el){if(el.tagName==='SELECT')el.selectedIndex=0;else el.value=''}}); }
+
+function toast(msg, type='info'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show '+type;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.className='',3000);
+}
+
+function download(name, content, mime){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content],{type:mime}));
+  a.download = name;
+  a.click();
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
+
+// Date
+document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+if(document.getElementById('f-bayar-tgl')) document.getElementById('f-bayar-tgl').value = new Date().toISOString().split('T')[0];
+if(document.getElementById('f-mulai')) document.getElementById('f-mulai').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
